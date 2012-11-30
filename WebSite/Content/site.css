@@ -1,0 +1,48 @@
+﻿
+html, body {
+    font-family: "Helvetica Neue", "Hiragino Sans GB", "Segoe UI", "Microsoft Yahei", "微软雅黑", Tahoma, Arial, STHeiti, sans-serif;
+}
+
+body {
+    overflow: hidden;
+    overflow-y: scroll;
+}
+
+.page-header {
+    margin: 20px 0 10px auto;
+    padding-bottom: 0px;
+}
+
+.row {
+    min-height: 50px;
+}
+
+.footer {
+    padding: 40px 0;
+}
+
+.grid {
+}
+
+    .grid .pagination {
+        margin: 0 0 10px 0;
+        float: right;
+    }
+
+    .grid .table {
+        margin: 10px 0;
+    }
+
+        .grid .table thead {
+            background-color: #08C;
+            color: #fff;
+        }
+
+.msg {
+    position: fixed;
+    top: 50px;
+    width: 80%;
+    left: 50%;
+    margin-left: -40%;
+    z-index: 2000;
+}
