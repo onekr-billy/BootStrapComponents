@@ -110,7 +110,7 @@ window.bootstrap = {};
     };
 
     nav.getConollerPath = function (control, action) {
-        return ["/scripts", "pages", "controller", control, action + ".js"].join("/");
+        return ["scripts", "pages", "controller", control, action + ".js"].join("/");
     };
 
     nav.resetAcrive = function () {
