@@ -56,7 +56,7 @@ window.bootstrap = {};
     };
 
     panel.getViewPath = function (control, action) {
-        return ["scripts", "pages", "view", control, action + ".html"].join("/");
+        return ["Scripts", "pages", "view", control, action + ".html"].join("/");
     };
 
     panel.resetAcrive = function () {
@@ -110,7 +110,7 @@ window.bootstrap = {};
     };
 
     nav.getConollerPath = function (control, action) {
-        return ["scripts", "pages", "controller", control, action + ".js"].join("/");
+        return ["Scripts", "pages", "controller", control, action + ".js"].join("/");
     };
 
     nav.resetAcrive = function () {
