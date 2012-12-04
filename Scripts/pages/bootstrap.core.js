@@ -56,7 +56,7 @@ window.bootstrap = {};
     };
 
     panel.getViewPath = function (control, action) {
-        return ["/scripts", "pages", "view", control, action + ".html"].join("/");
+        return ["scripts", "pages", "view", control, action + ".html"].join("/");
     };
 
     panel.resetAcrive = function () {
