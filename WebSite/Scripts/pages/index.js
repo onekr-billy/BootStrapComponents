@@ -32,5 +32,7 @@ $(document).ready(function () {
         return false;
     });
 
+    $(".router-action[data-router='task-execution']").click();
+
 
 });

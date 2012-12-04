@@ -343,7 +343,7 @@ window.bootstrap = {};
             var gridHead = [];
             $.each(options.columns, function (i, item) {
                 if (item.dataType == "checkbox")
-                    gridHead.push('<th data-index="' + item.dataIndex + '"><input type="checkbox" class="checkall" /></th>');
+                    gridHead.push('<th style="text-align:center;" data-index="' + item.dataIndex + '"><input type="checkbox" class="checkall" /></th>');
                 else
                     gridHead.push('<th data-index="' + item.dataIndex + '">' + item.head + '</th>');
             });
@@ -358,13 +358,93 @@ window.bootstrap = {};
 
         };
 
-        var gridBodyTpl = function () {
+        var gridTpl = ['<div id="' + gridId + '" ><table class="table table-bordered table-striped table-hover">'
+                        , gridHeadTpl()
+                        , '<tbody>'
+                        , '</tbody>'
+                        , '</table><div class="pagination pagination-right"></div></div>'].join("");
 
-            var gridBody = [];
+        return gridTpl;
 
-            if (typeof (options.data) != "undefined" && $.isArray(options.data.list)) {
+    };
 
-                $.each(options.data.list, function (i, listItem) {
+    var gridPagingTpl = function (gridId, page, size, total) {
+
+        var gridObj = $("#" + gridId);
+
+        var changePageFun = function (page) {
+            return [' onclick="bootstrap.grid.changepage(\'' + gridId + '\','
+            , page
+            , ','
+            , size
+            , ');" '].join("");
+        };
+
+        var isEnablePrev = page > 1;
+        var pagingPrev = ['<li class="'
+            , isEnablePrev ? '' : 'disabled'
+            , '" ><a '
+            , isEnablePrev ? changePageFun(page - 1) : ""
+            , ' href="javascript:;">Prev</a></li>'].join("");
+
+        var isEnableNext = page <= (total / size);
+        var pagingNext = ['<li class="'
+            , isEnableNext ? '' : 'disabled'
+            , '" ><a '
+            , isEnableNext ? changePageFun(page + 1) : ""
+            , ' href="javascript:;">Next</a></li>'].join("");
+
+        var pagingItems = [];
+
+        for (var i = 1; i <= Math.ceil(total / size) ; i++) {
+            if (i == page)
+                pagingItems.push('<li class="active"><a href="javascript:;">' + i + '</a></li>');
+            else
+                pagingItems.push(['<li><a onclick="bootstrap.grid.changepage(\'' + gridId + '\','
+            , i
+            , ','
+            , size
+            , ');" href="javascript:;">'
+            , i
+            , '</a></li>'].join(""));
+        }
+
+        var tpl = ['<ul>'
+                    , pagingPrev
+                    , pagingItems.join("")
+                    , pagingNext
+                    , '</ul>'].join("");
+
+        gridObj.find("div.pagination").html(tpl);
+
+    };
+
+    var DEFOPTIONS = {
+        url: null,
+        size: 3,
+        data: {},
+        columns: [],
+        showCheckbox: true,
+        showPaging: true
+    };
+    var gridOptions = {};
+
+    grid.changepage = function (gridId, page) {
+
+        var gridBody = [];
+        var options = gridOptions[gridId];
+
+        if (typeof (options) == 'undefined') return;
+
+        var bingData = function (gridId, options, page, data) {
+
+            var gridObj = $("#" + gridId);
+
+            if (typeof (data) == "object" && $.isArray(data.list)) {
+
+                gridPagingTpl(gridId, page, options.size, data.total);
+
+                $.each(data.list, function (i, listItem) {
 
                     var rowData = [];
                     rowData.push('<tr>');
@@ -374,7 +454,11 @@ window.bootstrap = {};
                         }
                         else {
                             if (colItem.dataType == "checkbox") {
-                                rowData.push('<td><input type="checkbox" value="' + listItem[colItem.dataIndex] + '" /></td>');
+                                var checkVal = listItem[colItem.checkVal];
+                                if (checkVal)
+                                    rowData.push('<td style="text-align:center;"><input class="_id" type="checkbox" checked="checked" value="' + listItem[colItem.dataIndex] + '" /></td>');
+                                else
+                                    rowData.push('<td style="text-align:center;"><input class="_id" type="checkbox" value="' + listItem[colItem.dataIndex] + '" /></td>');
                             } else {
                                 rowData.push('<td>' + listItem[colItem.dataIndex] + '</td>');
                             }
@@ -385,53 +469,58 @@ window.bootstrap = {};
 
                     gridBody.push(rowData.join(""));
                 });
-
-            } else if (typeof (options.url) == "string" && options.url.length > 0) {
-
             }
 
-            var tpl = ['<tbody>'
-                        , gridBody.join("")
-                    , '</tbody>'].join('');
+            gridObj.find("tbody").html(gridBody.join(""));
 
-            return tpl;
-
+            grid.checkState(gridId);
+            grid.checkBind(gridId);
         };
 
-        var gridPagingTpl = function () {
+        var data = {};
 
-            var tpl = ['<div class="pagination">'
-    , '                    <ul>'
-    , '                        <li clas="prev" ><a href="#">Prev</a></li>'
-    , '                        <li><a href="#">1</a></li>'
-    , '                        <li><a href="#">2</a></li>'
-    , '                        <li><a href="#">3</a></li>'
-    , '                        <li><a href="#">4</a></li>'
-    , '                        <li class="next"><a href="#">Next</a></li>'
-    , '                    </ul>'
-    , '                </div>'].join("");
+        if (typeof (options.data) != "undefined" && $.isArray(options.data.list)) {
+            bingData(gridId, options, page, options.data);
+        } else if (typeof (options.url) == "string" && options.url.length > 0) {
+            $.ajax({
+                url: options.url,
+                //async: false,
+                dataType: 'json',
+                data: { page: page, size: options.size },
+                success: function (jdata) {
+                    if (jdata.success)
+                        bingData(gridId, options, page, jdata);
+                }
 
-            return tpl;
+            });
+        }
+    };
 
-        };
+    grid.checkState = function (gridId) {
 
-        var gridTpl = ['<table class="table table-bordered table-hover">'
-                        , gridHeadTpl()
-                        , gridBodyTpl()
-                        , '</table>'
-                        , gridPagingTpl()].join("");
-
-        return gridTpl;
+        var gridObj = $("#" + gridId);
+        var checkboxAll = gridObj.find(".checkall");
+        var gridRows = gridObj.find("tbody > tr");
+        var itemCheckboxList = gridObj.find("input._id[type='checkbox']:checked");
+        if (itemCheckboxList.length == gridRows.length)
+            checkboxAll.attr("checked", true);
+        else
+            checkboxAll.removeAttr("checked");
 
     };
 
-    var DEFOPTIONS = {
-        url: null,
-        type: null,
-        data: {},
-        columns: [],
-        showCheckbox: true,
-        showPaging: true
+    grid.checkBind = function (gridId) {
+        var gridObj = $("#" + gridId);
+        gridObj.find("input._id[type='checkbox']").unbind().on("change", function () {
+            grid.checkState(gridId);
+        });
+        gridObj.find(".checkall").unbind().on("change", function () {
+            if (this.checked) {
+                gridObj.find("input._id[type='checkbox']").attr("checked", true);
+            } else {
+                gridObj.find("input._id[type='checkbox']").removeAttr("checked");
+            }
+        });
     };
 
     grid.init = function (containerId, gridId, options) {
@@ -439,15 +528,104 @@ window.bootstrap = {};
         options = $.extend(DEFOPTIONS, options);
 
         var container = $("#" + containerId);
-        var grid = $("#" + gridId);
+        var gridObj = $("#" + gridId);
+        gridOptions[gridId] = options;
 
-        if (container.length > 0 && grid.length == 0) {
+        if (container.length > 0 && gridObj.length == 0) {
             setTimeout(function () {
                 var tpl = getTpl(gridId, options);
                 container.append(tpl);
+                grid.changepage(gridId, 1);
             }, 200);
         }
+    };
 
+    grid.getSelectIds = function (gridId) {
+        var gridObj = $("#" + gridId);
+        var itemCheckboxList = gridObj.find("input._id[type='checkbox']:checked");
+        var ids = [];
+        $.each(itemCheckboxList, function () {
+            var val = parseInt($(this).val());
+            if (typeof (val) === 'number' && !isNaN(val))
+                ids.push(val);
+        });
+        return ids;
     };
 
 })(bootstrap, bootstrap.grid = {});
+
+(function (bootstrap, modal) {
+
+    var getTpl = function (modalId, options) {
+
+        var title = options.title,
+            content = options.content,
+            buttons = options.buttons,
+            url = options.url;
+
+        if ((content || "").length == 0 && (url || "").length > 0) {
+            $.ajax({
+                url: url,
+                type: 'get',
+                dataType: 'html',
+                async: false,
+                success: function (html) {
+                    content = html;
+                }
+            });
+        }
+
+        return ['<div  class="modal hide fade" id="' + modalId + '">'
+                , '<div class="modal-header">'
+                , '<a class="close" data-dismiss="modal">×</a><h4>'
+                , title
+                , '</h4></div>'
+                , '<div class="modal-body">'
+                , content,
+                , '</div><div class="modal-footer">'
+                , buttons.join("")
+                , '</div></div>'].join("");
+
+    };
+
+    var DEFOPTIONS = {
+        backdrop: true,
+        show: false,
+        keyboard: true,
+        url: '',
+        title: '',
+        content: '',
+        buttons: []
+    };
+
+    var modalId = "bootstrapModal";
+
+    modal.hide = function (isRemove) {
+        var modalObj = $("#" + modalId);
+        modalObj.modal("hide");
+        if (isRemove) {
+            setTimeout(function () {
+                modalObj.remove();
+            }, 200);
+        }
+    };
+
+    modal.show = function (options) {
+
+        if ($("#" + modalId).length <= 0) {
+            options = $.extend(DEFOPTIONS, options);
+
+            var tpl = getTpl(modalId, options);
+            $(document.body).append(tpl);
+
+            $("#" + modalId).modal({
+                backdrop: options.backdrop,
+                keyboard: options.keyboard,
+                show: options.show
+            });
+        }
+        $("#" + modalId).modal("show");
+
+    };
+
+})(bootstrap, bootstrap.modal = {});

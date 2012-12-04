@@ -24,11 +24,6 @@ body {
 .grid {
 }
 
-    .grid .pagination {
-        margin: 0 0 10px 0;
-        float: right;
-    }
-
     .grid .table {
         margin: 10px 0;
     }

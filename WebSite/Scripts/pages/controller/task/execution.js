@@ -1,32 +1,33 @@
 ﻿
 define(function () {
 
-    var gridData = {
-        page: 1, size: 2, total: 100, list: []
-    };
-    for (var i = 1000; i < 1010; i++) {
-        gridData.list.push({
-            id: i,
-            title: "title" + i,
-            createTime: (new Date()),
-            status: 1
-        });
-    }
-
-    var gridColumn = [
-        { head: '选择', dataType: 'checkbox', dataIndex: 'checked', format: null },
-        { head: 'ID', dataIndex: 'id', format: null },
-        { head: '标题', dataIndex: 'title', format: null },
-        { head: '创建时间', dataIndex: 'createTime', format: null },
-        { head: '状态', dataIndex: 'status', format: function (column, rowData) { return rowData[column.dataIndex]; } }
-    ];
-
     bootstrap.grid.init("grid-container", "grid1", {
-        url: '',
-        type: 'get',
-        data: gridData,
-        columns: gridColumn,
+        //url: 'http://localhost:25667/api/top/shop?format=json',
+        url: 'grid-data.json',
+        //data: gridData,
+        size: 10,
+        columns: [
+            { head: '选择', dataType: 'checkbox', checkVal: 'ischecked', dataIndex: 'id', format: null },
+            { head: 'ID', dataIndex: 'id', format: null },
+            { head: '标题', dataIndex: 'title', format: null },
+            { head: '创建时间', dataIndex: 'created', format: null },
+            { head: '状态', dataIndex: 'state', format: function (column, rowData) { return rowData[column.dataIndex]; } }
+        ],
         showCheckbox: true
+    });
+
+    $("#btnShowForm").click(function () {
+        bootstrap.modal.show({
+            title: '测试标题',
+            url: 'scripts/pages/view/task/task-detail.html',
+            //content: '测试内容<input type="text" />',
+            buttons: ['<a href="#" class="btn" data-dismiss="modal">关闭</a>'
+                      , '<a href="#" class="btn btn-primary">保存更新</a>']
+        });
+    });
+
+    $("#btnHideForm").click(function () {
+        bootstrap.modal.hide();
     });
 
     bootstrap.msg.show("信息", bootstrap.msg.ERROR);
